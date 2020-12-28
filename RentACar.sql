@@ -1,5 +1,5 @@
-CREATE DATABASE RentACar2;
-USE RentACar2;
+ÔªøCREATE DATABASE RentACar3;
+USE RentACar3;
 CREATE TABLE Workers
 (Id        INT IDENTITY(1, 1) PRIMARY KEY, 
  FirstName NVARCHAR(30) NOT NULL, 
@@ -20,8 +20,8 @@ CREATE TABLE Rents
  WorkerId            INT FOREIGN KEY REFERENCES dbo.Workers(Id), 
  VehicleId           INT FOREIGN KEY REFERENCES dbo.Vehicles(Id), 
  RentDate            DATETIME2 NOT NULL, 
- RentAmount          float CHECK(RentAmount >= 1
-                               AND RentAmount % 0.5 = 0) NOT NULL, 
+ RentAmount          DECIMAL CHECK(RentAmount >= 1
+                                   AND RentAmount % 0.5 = 0) NOT NULL, 
  Price               INT NOT NULL, 
  BuyerFirstName      NVARCHAR(30) NOT NULL, 
  BuyerLastName       NVARCHAR(30) NOT NULL, 
@@ -116,7 +116,7 @@ N'Limo', -- PricingType - NVARCHAR
 ),
 (
 -- Id - INT
-N'äkoda', -- Manufacturer - NVARCHAR
+N'≈†koda', -- Manufacturer - NVARCHAR
 N'Octavia', -- Model - NVARCHAR
 N'DA-128-AA', -- RegistrationPlate - NVARCHAR
 '2021-1-15', -- RegistrationExpirationDate - DATETIME2
@@ -126,7 +126,7 @@ N'Limo', -- PricingType - NVARCHAR
 ),
 (
 -- Id - INT
-N'äkoda', -- Manufacturer - NVARCHAR
+N'≈†koda', -- Manufacturer - NVARCHAR
 N'Fabia', -- Model - NVARCHAR
 N'DA-129-AA', -- RegistrationPlate - NVARCHAR
 '2021-1-15', -- RegistrationExpirationDate - DATETIME2
@@ -136,7 +136,7 @@ N'City', -- PricingType - NVARCHAR
 ),
 (
 -- Id - INT
-N'äkoda', -- Manufacturer - NVARCHAR
+N'≈†koda', -- Manufacturer - NVARCHAR
 N'Superb', -- Model - NVARCHAR
 N'DA-130-AA', -- RegistrationPlate - NVARCHAR
 '2021-1-15', -- RegistrationExpirationDate - DATETIME2
@@ -146,7 +146,7 @@ N'Limo', -- PricingType - NVARCHAR
 ),
 (
 -- Id - INT
-N'äkoda', -- Manufacturer - NVARCHAR
+N'≈†koda', -- Manufacturer - NVARCHAR
 N'Karoq', -- Model - NVARCHAR
 N'DA-131-AA', -- RegistrationPlate - NVARCHAR
 '2021-1-15', -- RegistrationExpirationDate - DATETIME2
@@ -156,7 +156,7 @@ N'SUV', -- PricingType - NVARCHAR
 ),
 (
 -- Id - INT
-N'äkoda', -- Manufacturer - NVARCHAR
+N'≈†koda', -- Manufacturer - NVARCHAR
 N'Kodiaq', -- Model - NVARCHAR
 N'DA-132-AA', -- RegistrationPlate - NVARCHAR
 '2021-1-15', -- RegistrationExpirationDate - DATETIME2
@@ -284,7 +284,7 @@ VALUES
 1, -- WorkerId - INT
 1, -- VehicleId - INT
 '2020-09-20', -- RentDate - DATETIME2
-3, -- RentAmount - INT
+6, -- RentAmount - INT
 0, -- Price - INT
 N'Ivana', -- BuyerFirstName - NVARCHAR
 N'Ivanovska', -- BuyerLastName - NVARCHAR
@@ -297,7 +297,7 @@ N'5322456787543578' -- BuyerCreditCard - NVARCHAR
 1, -- WorkerId - INT
 2, -- VehicleId - INT
 '2020-09-25', -- RentDate - DATETIME2
-3, -- RentAmount - INT
+5, -- RentAmount - INT
 0, -- Price - INT
 N'Ivana', -- BuyerFirstName - NVARCHAR
 N'Ivanovska', -- BuyerLastName - NVARCHAR
@@ -349,7 +349,7 @@ N'5322456787543578' -- BuyerCreditCard - NVARCHAR
 2, -- WorkerId - INT
 6, -- VehicleId - INT
 '2020-09-20', -- RentDate - DATETIME2
-3, -- RentAmount - INT
+8, -- RentAmount - INT
 0, -- Price - INT
 N'Ivan', -- BuyerFirstName - NVARCHAR
 N'Ivanovski', -- BuyerLastName - NVARCHAR
@@ -362,7 +362,7 @@ N'5322459854543578' -- BuyerCreditCard - NVARCHAR
 2, -- WorkerId - INT
 7, -- VehicleId - INT
 '2020-09-25', -- RentDate - DATETIME2
-3, -- RentAmount - INT
+2, -- RentAmount - INT
 0, -- Price - INT
 N'Ivan', -- BuyerFirstName - NVARCHAR
 N'Ivanovski', -- BuyerLastName - NVARCHAR
@@ -492,9 +492,13 @@ FROM dbo.Vehicles v;
 --4
 SELECT TOP 5 *
 FROM dbo.Rents r
-WHERE r.WorkerId = 21;
+WHERE r.WorkerId = 1;
 --5
-SELECT CASE PricingType
+SELECT MIN(v.Manufacturer), 
+       MIN(v.Model), 
+       MIN(r.BuyerFirstName), 
+       MIN(r.BuyerLastName),
+       CASE PricingType
            WHEN 'City'
            THEN 500
            WHEN 'Limo'
@@ -508,37 +512,38 @@ SELECT CASE PricingType
            WHEN '300cc'
            THEN 500
            ELSE 100
-       END AS TypePrice,
-       CASE
-           WHEN MONTH(r.RentDate) <= 9
-                AND MONTH(r.RentDate) >= 3
-                AND MONTH(DATEADD(day, r.RentAmount, r.RentDate)) <= 9
-                AND MONTH(DATEADD(day, r.RentAmount, r.RentDate)) >= 3
-           THEN 1.5
-           WHEN(MONTH(r.RentDate) > 9
-                OR MONTH(r.RentDate) < 3)
-               AND (MONTH(DATEADD(day, r.RentAmount, r.RentDate)) > 9
-                    OR MONTH(DATEADD(day, r.RentAmount, r.RentDate)) < 3)
-           THEN 1
-           WHEN(MONTH(r.RentDate) > 9
-                AND MONTH(DATEADD(day, r.RentAmount, r.RentDate)) <= 9)
-               OR (MONTH(r.RentDate) < 3
-                   AND MONTH(DATEADD(day, r.RentAmount, r.RentDate)) >= 3)
-           THEN SUM((1.5 * DATEDIFF(day, r.RentDate, '2020-10-1') + DATEDIFF(day, '2020-10-1', DATEADD(day, r.RentAmount, r.RentDate)))/cast(r.RentAmount AS float))		   
-           WHEN(MONTH(r.RentDate) <= 9
-                AND MONTH(DATEADD(day, r.RentAmount, r.RentDate)) > 9)
-               OR (MONTH(r.RentDate) >= 3
-                   AND MONTH(DATEADD(day, r.RentAmount, r.RentDate)) < 3)
-           THEN  sum(1.5* datediff(day,r.RentDate,'2020-10-1')+datediff(day,'2020-10-1',DATEADD(day, r.RentAmount, r.RentDate))-(datediff(day,r.RentDate,'2020-20-1')>214)*(datediff(day,r.RentDate,'2020-20-1')-214)*0.5+(datediff(day, '2020-10-1',DATEADD(day, r.RentAmount, r.RentDate))>151)*(datediff(day, '2020-10-1',DATEADD(day, r.RentAmount, r.RentDate))-151)*0.5)
-       END AS TimeOfYearPrice, 
-       v.Id
---trenutno ne radi ovaj zadatak, pokuöa san ga popravit al nije iölo
+       END * CASE
+                 WHEN MONTH(r.RentDate) <= 9
+                      AND MONTH(r.RentDate) >= 3
+                      AND MONTH(DATEADD(day, r.RentAmount, r.RentDate)) <= 9
+                      AND MONTH(DATEADD(day, r.RentAmount, r.RentDate)) >= 3
+                 THEN 1.5
+                 WHEN(MONTH(r.RentDate) > 9
+                      OR MONTH(r.RentDate) < 3)
+                     AND (MONTH(DATEADD(day, r.RentAmount, r.RentDate)) > 9
+                          OR MONTH(DATEADD(day, r.RentAmount, r.RentDate)) < 3)
+                 THEN 1
+                 WHEN(MONTH(r.RentDate) > 9
+                      AND MONTH(DATEADD(day, r.RentAmount, r.RentDate)) <= 9)
+                     OR (MONTH(r.RentDate) < 3
+                         AND MONTH(DATEADD(day, r.RentAmount, r.RentDate)) >= 3)
+                 THEN SUM((1.5 * DATEDIFF(day, r.RentDate, '2020-10-1') + DATEDIFF(day, '2020-10-1', DATEADD(day, r.RentAmount, r.RentDate))) / CAST(r.RentAmount AS FLOAT))
+                 WHEN(MONTH(r.RentDate) <= 9
+                      AND MONTH(DATEADD(day, r.RentAmount, r.RentDate)) > 9)
+                     OR (MONTH(r.RentDate) >= 3
+                         AND MONTH(DATEADD(day, r.RentAmount, r.RentDate)) < 3)
+                 THEN SUM((1.5 * DATEDIFF(day, r.RentDate, '2020-10-1') + DATEDIFF(day, '2020-10-1', DATEADD(day, r.RentAmount, r.RentDate))) / CAST(r.RentAmount AS FLOAT))	
+             --THEN  sum(1.5* datediff(day,r.RentDate,'2020-10-1')+datediff(day,'2020-10-1',DATEADD(day, r.RentAmount, r.RentDate))-(datediff(day,r.RentDate,'2020-20-1')>214)*(datediff(day,r.RentDate,'2020-20-1')-214)*0.5+(datediff(day, '2020-10-1',DATEADD(day, r.RentAmount, r.RentDate))>151)*(datediff(day, '2020-10-1',DATEADD(day, r.RentAmount, r.RentDate))-151)*0.5)
+             --ovaj iznad je nacin koji je triba risit za svaki prijelaz i datum, ali mi izbacuje neki syntax error u koji san gleda ravno uru ipo vrimena i nisan moga skuzit di san falia
+             --znan da mi je greska u ovom trenutnom rijesenju jer gleda samo prijelaz od 1. desetog
+             END * r.RentAmount AS Price
+--iskreno se ispricavam svakoj osobi koja je morala vidit ovu katastrofu ali nisan ima druge ideje kako risit osim nekom matematickom operacijom jer sam poku≈°a ri≈°it za svaki moguƒái prealz datuma
 FROM dbo.Rents r
      JOIN dbo.Vehicles v ON r.VehicleId = v.Id
-GROUP BY v.PricingType, 
+GROUP BY r.RentDate, 
+         v.PricingType, 
          r.RentDate, 
-         r.RentAmount, 
-         v.Id;
+         r.RentAmount;
 --6
 SELECT DISTINCT 
        r.BuyerFirstName, 
@@ -557,10 +562,58 @@ SELECT v.Manufacturer,
 FROM dbo.Vehicles v
 GROUP BY v.Manufacturer;
 --9
+UPDATE dbo.Rents
+  SET 
+      price =
+(
+    SELECT (CASE PricingType
+               WHEN 'City'
+               THEN 500
+               WHEN 'Limo'
+               THEN 1000
+               WHEN 'SUV'
+               THEN 1500
+               WHEN '50cc'
+               THEN 300
+               WHEN '125cc'
+               THEN 400
+               WHEN '300cc'
+               THEN 500
+               ELSE 100
+           END * CASE
+                     WHEN MONTH(r.RentDate) <= 9
+                          AND MONTH(r.RentDate) >= 3
+                          AND MONTH(DATEADD(day, r.RentAmount, r.RentDate)) <= 9
+                          AND MONTH(DATEADD(day, r.RentAmount, r.RentDate)) >= 3
+                     THEN 1.5
+                     WHEN(MONTH(r.RentDate) > 9
+                          OR MONTH(r.RentDate) < 3)
+                         AND (MONTH(DATEADD(day, r.RentAmount, r.RentDate)) > 9
+                              OR MONTH(DATEADD(day, r.RentAmount, r.RentDate)) < 3)
+                     THEN 1
+                     WHEN(MONTH(r.RentDate) > 9
+                          AND MONTH(DATEADD(day, r.RentAmount, r.RentDate)) <= 9)
+                         OR (MONTH(r.RentDate) < 3
+                             AND MONTH(DATEADD(day, r.RentAmount, r.RentDate)) >= 3)
+                     THEN SUM((1.5 * DATEDIFF(day, r.RentDate, '2020-10-1') + DATEDIFF(day, '2020-10-1', DATEADD(day, r.RentAmount, r.RentDate))) / CAST(r.RentAmount AS FLOAT))
+                     WHEN(MONTH(r.RentDate) <= 9
+                          AND MONTH(DATEADD(day, r.RentAmount, r.RentDate)) > 9)
+                         OR (MONTH(r.RentDate) >= 3
+                             AND MONTH(DATEADD(day, r.RentAmount, r.RentDate)) < 3)
+                     THEN SUM((1.5 * DATEDIFF(day, r.RentDate, '2020-10-1') + DATEDIFF(day, '2020-10-1', DATEADD(day, r.RentAmount, r.RentDate))) / CAST(r.RentAmount AS FLOAT))	
+                 END * r.RentAmount)
+    FROM dbo.Rents r
+         JOIN dbo.Vehicles v ON r.VehicleId = v.Id
+	WHERE dbo.Rents.Id = r.Id
+    GROUP BY r.RentDate, 
+             v.PricingType, 
+             r.RentDate, 
+             r.RentAmount
+)
 SELECT *
 INTO RentsArchive
 FROM dbo.Rents r
-WHERE DATEADD(day, r.RentAmount, r.RentDate) < GETDATE(); 
+WHERE DATEADD(day, r.RentAmount, r.RentDate) < GETDATE();
 --10
 SELECT MONTH(r.RentDate) AS Month, 
        COUNT(r.Id) AS NumberOfRents
